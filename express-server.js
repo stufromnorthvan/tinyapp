@@ -18,7 +18,7 @@ const generateRandomString = function() {
     return Math.floor(Math.random() * max)
   }
   for (let r = 0; r < 5; r++) {
-    randoString += chars[randoInt(63)]
+    randoString += chars[randoInt(62)]
   }
   return randoString;
 }
