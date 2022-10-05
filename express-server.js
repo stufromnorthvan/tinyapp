@@ -23,6 +23,16 @@ const cookieLookup = (userIDCookie) => {
   }
 };
 
+const emailLookup = (userEmail) => {
+  for (let user in users) {
+    if (userEmail === users[user].email) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
 const generateRandomString = function() {
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   let randoString = '';
@@ -54,7 +64,7 @@ app.post("/urls/login", (req, res) => {
 });
 
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_ID");
   res.redirect("/urls");
 });
 
@@ -69,11 +79,19 @@ app.post("/urls/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  console.log(email);
+  console.log(emailLookup(email));
+  if (email === "" || password === "") {
+    return res.status(400).send("ERROR (╯°□°)╯ enter e-mail and password please!");
+  } else if (emailLookup(email)) {
+    return res.status(400).send("ERROR (╯°□°)╯ email already exists!");
+  }
   users[id] = {
     id,
     email,
     password
   };
+  console.log(users);
   res.cookie("user_ID", id);
   res.redirect("/urls");
 });
