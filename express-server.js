@@ -48,6 +48,17 @@ app.post("/urls/logout", (req, res) => {
   res.redirect("/urls"); 
 });
 
+app.get("/urls/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+    }
+  res.render("urls_register", templateVars);
+})
+
+app.post("/urls/register", (req, res) => {
+    console.log(req.body)
+})
+
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   urlDatabase[id] = req.body.update;
