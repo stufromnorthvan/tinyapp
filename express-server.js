@@ -1,21 +1,21 @@
-//Required Middleware
+// Required Middleware
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const app = express();
-//Mount Middleware Functions for Use
+// Mount Middleware Functions for Use
 app.use(cookieSession({
   name: 'user_id',
   keys: ['modnar', 'edocehtsseug']
 }));
 app.use(express.urlencoded({ extended: true }));
-//Port Number
+// Port Number
 const PORT = 8080;
-//Set View Engine
+// Set View Engine
 app.set("view engine", "ejs");
-//Helper Functions
+// Helper Functions
 const getUserByEmail = require('./helper.js');
-//Database of URLS
+// Database of URLS
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -26,9 +26,9 @@ const urlDatabase = {
     userID: "aJ48lW",
   }
 };
-//Database of Users
+// Database of Users
 const users = {};
-
+// Function to get URLs made by a particular user
 const urlsForUser = (id) => {
   let userURLS = {};
   for (let url in urlDatabase) {
@@ -38,7 +38,7 @@ const urlsForUser = (id) => {
   }
   return userURLS;
 };
-
+// Function to Generate Random String
 const generateRandomString = function() {
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   let randoString = '';
@@ -51,6 +51,20 @@ const generateRandomString = function() {
   return randoString;
 };
 
+// ** CRUD BELOW ** WARNING: any changes to the following code could SEVERELY affect functionality.
+
+//Homepage
+app.get("/urls", (req, res) => {
+  if (!req.session.user_id) {
+    return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
+  }
+  const templateVars = {
+    urls: urlsForUser(req.session.user_id),
+    user: users[req.session.user_id]
+  };
+  res.render("urls_index", templateVars);
+});
+
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
     res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to create a URL.</body></html>");
@@ -61,17 +75,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
   return;
 });
-
-app.post("/urls/:id/delete", (req, res) => {
-  if (!req.session.user_id) {
-    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
-    return;
-  }
-  const id = req.params.id;
-  delete urlDatabase[id];
-  res.redirect("/urls");
-});
-
+//Login
 app.get("/login", (req, res) => {
   if (req.session.user_id) {
     return res.redirect('/urls');
@@ -99,12 +103,7 @@ app.post("/login", (req, res) => {
   req.session.user_id = user.id;;
   res.redirect("/urls");
 });
-
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect("/urls");
-});
-
+//Register
 app.get("/register", (req, res) => {
   if (req.session.user_id) {
     return res.redirect('/urls');
@@ -133,7 +132,22 @@ app.post("/register", (req, res) => {
   req.session.user_id = id;
   res.redirect("/urls");
 });
-
+//Logout
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect("/urls");
+});
+//Delete URL
+app.post("/urls/:id/delete", (req, res) => {
+  if (!req.session.user_id) {
+    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
+    return;
+  }
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect("/urls");
+});
+//Update URL
 app.post("/urls/:id/update", (req, res) => {
   if (!req.session.user_id) {
     res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
@@ -143,7 +157,7 @@ app.post("/urls/:id/update", (req, res) => {
   urlDatabase[id].longURL = req.body.update;
   res.redirect(`/urls/${id}`);
 });
-
+//Redirect to LongURL Link
 app.get("/u/:id", (req, res) => {
   for (let url in urlDatabase) {
     if (req.params.id === url) {
@@ -154,25 +168,14 @@ app.get("/u/:id", (req, res) => {
   };
   res.send('(╯°□°)╯ ID does not exist. Please try again');
 });
-
-app.get("/urls", (req, res) => {
-  if (!req.session.user_id) {
-    return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
-  }
-  const templateVars = {
-    urls: urlsForUser(req.session.user_id),
-    user: users[req.session.user_id]
-  };
-  res.render("urls_index", templateVars);
-});
-
+//Create new URL, posts go to Homepage
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id]
   };
   res.render("urls_new", templateVars);
 });
-
+//View TinyApp ShortURL Page by ID
 app.get("/urls/:id", (req, res) => {
   if (!req.session.user_id) {
     return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
@@ -188,20 +191,19 @@ app.get("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-
-
+//Root redirects to homepage
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
-
+//JSON
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
+//Prints Hello World
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
-
+//Starts page on PORT 8080
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

@@ -1,3 +1,5 @@
+//NPM Test Data
+
 const { assert } = require('chai');
 const getUserByEmail = require('../helper.js');
 
@@ -13,6 +15,8 @@ const testUsers = {
     password: "dishwasher-funk"
   }
 };
+
+//NPM Tests Below
 
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
