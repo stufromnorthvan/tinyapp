@@ -1,7 +1,8 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 
 app.set("view engine", "ejs");
 
@@ -87,13 +88,14 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const user = getUserByEmail(email);
+  const comparePass = bcrypt.compareSync(password, user.password);
   if (email === "" || password === "") {
     return res.status(400).send("ERROR (╯°□°)╯ enter e-mail and password please!");
   }
   if (!user) {
     return res.status(404).send("ERROR (╯°□°)╯ an account with that email does not exist!");
   }
-  if (user && user.password !== password) {
+  if (user && !comparePass) {
     return res.status(403).send("ERROR (╯°□°)╯ the password you entered is incorrect!");
   }
   res.cookie("user_ID", user.id);
@@ -119,6 +121,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashPass = bcrypt.hashSync(password, 10);
   if (email === "" || password === "") {
     return res.status(400).send("ERROR (╯°□°)╯ enter e-mail and password please!");
   } else if (getUserByEmail(email)) {
@@ -127,9 +130,10 @@ app.post("/register", (req, res) => {
   users[id] = {
     id,
     email,
-    password
+    password: hashPass
   };
   res.cookie("user_ID", id);
+  console.log(users);
   res.redirect("/urls");
 });
 
