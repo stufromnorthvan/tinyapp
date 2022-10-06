@@ -19,18 +19,13 @@
         <% if (user) { %>
           <a class="nav-item">
           <label for="logout">Hello <%= user.email  %>&nbsp&nbsp</label>
-          <form method="POST" action="/urls/logout" name="logout">
+          <form method="POST" action="/logout" name="logout">
             <button type="submit" value="username" class="btn btn-primary">Logout</button>
           </form>
           </a>
           <% } else { %>
-          <a class="nav-item">
-          <form method="POST" action="/urls/login">
-            <label for="username">Username:</label>
-            <input type="text" name="username">
-            <button type="submit" value="username" class="btn btn-primary">Login</button>
-          </form>
-          </a>
+            <a class="nav-item nav-link" href="/register">Register</a>
+            <a class="nav-item nav-link" href="/login">Log In</a>
         <% } %>
       </div>
     </div>
