@@ -31,24 +31,36 @@ const generateRandomString = function() {
     return Math.floor(Math.random() * max);
   };
   for (let r = 0; r < 5; r++) {
-    randoString += chars[randoInt(63)];
+    randoString += chars[randoInt(62)];
   }
   return randoString;
 };
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies["user_ID"]) {
+    res.send('(╯°□°)╯Please log in or register if you would like to create a new URL.');
+    return;
+  }
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
+  return;
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  if (!req.cookies["user_ID"]) {
+    res.send('(╯°□°)╯Please log in or register if you would like to delete a URL.');
+    return;
+  }
   const id = req.params.id;
   delete urlDatabase[id];
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
+  if (req.cookies["user_ID"]) {
+    return res.redirect('/urls');
+  }
   const templateVars = {
     user: users[req.cookies["user_ID"]]
   };
@@ -78,6 +90,9 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (req.cookies["user_ID"]) {
+    return res.redirect('/urls');
+  }
   const templateVars = {
     user: users[req.cookies["user_ID"]]
   };
@@ -103,14 +118,24 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
+  if (!req.cookies["user_ID"]) {
+    res.send('(╯°□°)╯Please log in or register if you would like to update a URL.');
+    return;
+  }
   const id = req.params.id;
   urlDatabase[id] = req.body.update;
   res.redirect(`/urls/${id}`);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  for (let url in urlDatabase) {
+    if (req.params.id === url) {
+      const longURL = urlDatabase[req.params.id];
+      res.redirect(longURL);
+      return;
+    }
+  };
+  res.send('(╯°□°)╯ ID does not exist. Please try again');
 });
 
 app.get("/urls", (req, res) => {
