@@ -8,11 +8,6 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -25,6 +20,16 @@ const urlDatabase = {
 };
 
 const users = {};
+
+const urlsForUser = (id) => {
+  let userURLS = {};
+  for (let url in urlDatabase) {
+    if (id === urlDatabase[url].userID) {
+      userURLS[url] = urlDatabase[url];
+    }
+  }
+  return userURLS;
+};
 
 const getUserByEmail = (userEmail) => {
   for (let user in users) {
@@ -53,7 +58,7 @@ app.post("/urls", (req, res) => {
     return;
   }
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies["user_ID"] }
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies["user_ID"] };
   res.redirect(`/urls/${shortURL}`);
   return;
 });
@@ -150,8 +155,11 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!req.cookies["user_ID"]) {
+    return res.status(401).send("ERROR (╯°□°)╯ please log in to continue.");
+  }
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies["user_ID"]),
     user: users[req.cookies["user_ID"]]
   };
   res.render("urls_index", templateVars);
@@ -165,6 +173,13 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["user_ID"]) {
+    return res.status(401).send("ERROR (╯°□°)╯ please log in to view URLs.");
+  }
+  let accessibleURLS = urlsForUser(req.cookies["user_ID"]);
+  if (!accessibleURLS[req.params.id]) {
+    return res.status(401).send("ERROR (╯°□°)╯ you do not have permission to view this url.");
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[`${req.params.id}`].longURL,
