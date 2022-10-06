@@ -1,12 +1,18 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'user_id',
+  keys: ['modnar', 'edocehtsseug']
+}));
+
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -17,7 +23,7 @@ const urlDatabase = {
   i3BoGr: {
     longURL: "https://www.google.ca",
     userID: "aJ48lW",
-  },
+  }
 };
 
 const users = {};
@@ -54,18 +60,18 @@ const generateRandomString = function() {
 };
 
 app.post("/urls", (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to create a URL.</body></html>");
     return;
   }
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies["user_ID"] };
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id };
   res.redirect(`/urls/${shortURL}`);
   return;
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
     return;
   }
@@ -75,11 +81,11 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  if (req.cookies["user_ID"]) {
+  if (req.session.user_id) {
     return res.redirect('/urls');
   }
   const templateVars = {
-    user: users[req.cookies["user_ID"]]
+    user: users[req.session.user_id]
   };
   res.render("urls_login", templateVars);
 });
@@ -98,21 +104,21 @@ app.post("/login", (req, res) => {
   if (user && !comparePass) {
     return res.status(403).send("ERROR (╯°□°)╯ the password you entered is incorrect!");
   }
-  res.cookie("user_ID", user.id);
+  req.session.user_id = user.id;;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_ID");
+  req.session.user_id = null;
   res.redirect("/urls");
 });
 
 app.get("/register", (req, res) => {
-  if (req.cookies["user_ID"]) {
+  if (req.session.user_id) {
     return res.redirect('/urls');
   }
   const templateVars = {
-    user: users[req.cookies["user_ID"]]
+    user: users[req.session.user_id]
   };
   res.render("urls_register", templateVars);
 });
@@ -132,13 +138,13 @@ app.post("/register", (req, res) => {
     email,
     password: hashPass
   };
-  res.cookie("user_ID", id);
+  req.session.user_id = id;
   console.log(users);
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/update", (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
     return;
   }
@@ -159,35 +165,35 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
   }
   const templateVars = {
-    urls: urlsForUser(req.cookies["user_ID"]),
-    user: users[req.cookies["user_ID"]]
+    urls: urlsForUser(req.session.user_id),
+    user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["user_ID"]]
+    user: users[req.session.user_id]
   };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
   }
-  let accessibleURLS = urlsForUser(req.cookies["user_ID"]);
+  let accessibleURLS = urlsForUser(req.session.user_id);
   if (!accessibleURLS[req.params.id]) {
     return res.status(401).send("ERROR (╯°□°)╯ you do not have permission to view this url.");
   }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[`${req.params.id}`].longURL,
-    user: users[req.cookies["user_ID"]]
+    user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 });
