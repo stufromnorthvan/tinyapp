@@ -1,20 +1,21 @@
+//Required Middleware
 const express = require("express");
-// const cookieParser = require('cookie-parser');
-var cookieSession = require('cookie-session');
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const app = express();
-const PORT = 8080;
-
-app.set("view engine", "ejs");
-
-// app.use(cookieParser());
+//Mount Middleware Functions for Use
 app.use(cookieSession({
   name: 'user_id',
   keys: ['modnar', 'edocehtsseug']
 }));
-
 app.use(express.urlencoded({ extended: true }));
-
+//Port Number
+const PORT = 8080;
+//Set View Engine
+app.set("view engine", "ejs");
+//Helper Functions
+const getUserByEmail = require('./helper.js');
+//Database of URLS
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -25,7 +26,7 @@ const urlDatabase = {
     userID: "aJ48lW",
   }
 };
-
+//Database of Users
 const users = {};
 
 const urlsForUser = (id) => {
@@ -36,15 +37,6 @@ const urlsForUser = (id) => {
     }
   }
   return userURLS;
-};
-
-const getUserByEmail = (userEmail) => {
-  for (let user in users) {
-    if (userEmail === users[user].email) {
-      return users[user];
-    }
-  }
-  return null;
 };
 
 const generateRandomString = function() {
@@ -93,7 +85,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   const comparePass = bcrypt.compareSync(password, user.password);
   if (email === "" || password === "") {
     return res.status(400).send("ERROR (╯°□°)╯ enter e-mail and password please!");
@@ -109,7 +101,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -130,7 +122,7 @@ app.post("/register", (req, res) => {
   const hashPass = bcrypt.hashSync(password, 10);
   if (email === "" || password === "") {
     return res.status(400).send("ERROR (╯°□°)╯ enter e-mail and password please!");
-  } else if (getUserByEmail(email)) {
+  } else if (getUserByEmail(email, users)) {
     return res.status(400).send("ERROR (╯°□°)╯ email already exists!");
   }
   users[id] = {
@@ -139,7 +131,6 @@ app.post("/register", (req, res) => {
     password: hashPass
   };
   req.session.user_id = id;
-  console.log(users);
   res.redirect("/urls");
 });
 
