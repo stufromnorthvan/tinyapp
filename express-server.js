@@ -54,7 +54,7 @@ const generateRandomString = function() {
 
 app.post("/urls", (req, res) => {
   if (!req.cookies["user_ID"]) {
-    res.send('(╯°□°)╯Please log in or register if you would like to create a new URL.');
+    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to create a URL.</body></html>");
     return;
   }
   let shortURL = generateRandomString();
@@ -65,7 +65,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.cookies["user_ID"]) {
-    res.send('(╯°□°)╯Please log in or register if you would like to delete a URL.');
+    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
     return;
   }
   const id = req.params.id;
@@ -135,7 +135,7 @@ app.post("/register", (req, res) => {
 
 app.post("/urls/:id/update", (req, res) => {
   if (!req.cookies["user_ID"]) {
-    res.send('(╯°□°)╯Please log in or register if you would like to update a URL.');
+    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
     return;
   }
   const id = req.params.id;
@@ -156,7 +156,7 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls", (req, res) => {
   if (!req.cookies["user_ID"]) {
-    return res.status(401).send("ERROR (╯°□°)╯ please log in to continue.");
+    return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
   }
   const templateVars = {
     urls: urlsForUser(req.cookies["user_ID"]),
@@ -174,7 +174,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if (!req.cookies["user_ID"]) {
-    return res.status(401).send("ERROR (╯°□°)╯ please log in to view URLs.");
+    return res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
   }
   let accessibleURLS = urlsForUser(req.cookies["user_ID"]);
   if (!accessibleURLS[req.params.id]) {
