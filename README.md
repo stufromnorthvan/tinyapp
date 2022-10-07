@@ -6,8 +6,8 @@ Thank you for using TinyApp.
 
 ## ⚫️ ⚪️ 🟡 🔴 What Does It Look Like? 🔴 🟡 ⚪️ ⚫️
 
-!["The main landing page where all the URLs are stored"](#)
-!["The page of an individual URL, with all available information about it"](#)
+!["The main landing page where all the URLs are stored"](https://github.com/stufromnorthvan/tinyapp/blob/main/docs/urls-page-screen.png?raw=true)
+!["The page of an individual URL, with all available information about it"](https://github.com/stufromnorthvan/tinyapp/blob/main/docs/urlid-page-screen.png?raw=true)
 
 ## ⚫️ ⚪️ 🟡 🔴 What Dependencies Do I Need? 🔴 🟡 ⚪️ ⚫️
 
