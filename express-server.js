@@ -67,7 +67,7 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
-    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to create a URL.</body></html>");
+    res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to create a URL.</body></html>");
     return;
   }
   let shortURL = generateRandomString();
@@ -140,7 +140,7 @@ app.post("/logout", (req, res) => {
 //Delete URL
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.session.user_id) {
-    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
+    res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to delete a URL.</body></html>");
     return;
   }
   const id = req.params.id;
@@ -150,7 +150,7 @@ app.post("/urls/:id/delete", (req, res) => {
 //Update URL
 app.post("/urls/:id/update", (req, res) => {
   if (!req.session.user_id) {
-    res.send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
+    res.status(401).send("<html><body>ERROR (╯°□°)╯ please <a href=/login>log in</a> or <a href=/register>register</a> to view URLs.</body></html>");
     return;
   }
   const id = req.params.id;
@@ -166,7 +166,7 @@ app.get("/u/:id", (req, res) => {
       return;
     }
   };
-  res.send('(╯°□°)╯ ID does not exist. Please try again');
+  res.status(404).send('(╯°□°)╯ ID does not exist. Please try again');
 });
 //Create new URL, posts go to Homepage
 app.get("/urls/new", (req, res) => {
